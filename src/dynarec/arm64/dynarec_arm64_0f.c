@@ -60,24 +60,20 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
 
     switch(opcode) {
         case 0x00:
-            if(rex.is32bits) {
-                nextop = F8;
-                switch((nextop>>3)&7) {
-                    case 0:
-                        INST_NAME("SLDT EW");
-                        if(MODREG) {
-                            ed = TO_NAT((nextop & 7) + (rex.b << 3));
-                            MOV32w(ed, 0);
-                        } else {
-                            addr = geted(dyn, addr, ninst, nextop, &wback, x2, &fixedaddress, NULL, 0, 0, rex, NULL, 0, 0);
-                            STRH_U12(xZR, wback, 0);
-                        }
-                        break;
-                    default:
-                        DEFAULT;
-                }
-            } else {
-                DEFAULT;
+            nextop = F8;
+            switch((nextop>>3)&7) {
+                case 0:
+                    INST_NAME("SLDT EW");
+                    if(MODREG) {
+                        ed = TO_NAT((nextop & 7) + (rex.b << 3));
+                        MOV32w(ed, 0);
+                    } else {
+                        addr = geted(dyn, addr, ninst, nextop, &wback, x2, &fixedaddress, NULL, 0, 0, rex, NULL, 0, 0);
+                        STRH_U12(xZR, wback, 0);
+                    }
+                    break;
+                default:
+                    DEFAULT;
             }
             break;
         case 0x01:
@@ -318,12 +314,12 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             break;
         case 0x13:
             nextop = F8;
-            INST_NAME("MOVLPS Ex, Gx");
-            GETGX(v0, 0);
             if(MODREG) {
-                DEFAULT;
-                return addr;
+                INST_NAME("Illegal 0F 13");
+                UDF(0);
             } else {
+                INST_NAME("MOVLPS Ex, Gx");
+                GETGX(v0, 0);
                 addr = geted(dyn, addr, ninst, nextop, &ed, x1, &fixedaddress, NULL, 0, 0, rex, NULL, 0, 0);
                 VST1_64(v0, 0, ed);  // better to use VST1 than VSTR_64, to avoid NEON->VFPU transfert I assume
                 SMWRITE2();
@@ -426,7 +422,7 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             nextop = F8;
             GETIP(ip);
             u8 = (rex.r*8)+(nextop>>3&7);
-            if((((opcode==0x20) || (opcode==0x22)) && ((u8==1) || (u8==5) || (u8==6) || (u8==7) || (u8>8))) || (((opcode==0x21) || (opcode==0x23) && rex.r))) {
+            if((((opcode==0x20) || (opcode==0x22)) && ((u8==1) || (u8==5) || (u8==6) || (u8==7) || (u8>8))) || (((opcode==0x21) || (opcode==0x23)) && rex.r)) {
                 INST_NAME("Illegal 0F 20..23");
                 UDF(0);
             } else {
@@ -483,13 +479,14 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             VMOVeD(v0, 0, d0, 0);
             break;
         case 0x2B:
-            INST_NAME("MOVNTPS Ex,Gx");
             nextop = F8;
-            GETG;
-            v0 = sse_get_reg(dyn, ninst, x1, gd, 0);
             if(MODREG) {
-                DEFAULT;
+                INST_NAME("Illegal 0F 2B");
+                UDF(0);
             } else {
+                INST_NAME("MOVNTPS Ex,Gx");
+                GETG;
+                v0 = sse_get_reg(dyn, ninst, x1, gd, 0);
                 addr = geted(dyn, addr, ninst, nextop, &ed, x1, &fixedaddress, &unscaled, 0xfff<<4, 15, rex, NULL, 0, 0);
                 VST128(v0, ed, fixedaddress);
             }
@@ -1679,6 +1676,11 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             INST_NAME("EMMS");
             // empty MMX, FPU now usable
             mmx_purgecache(dyn, ninst, 0, x1);
+            x87_purgecache(dyn, ninst, 1, x1, x2, x3);  // also purge x87 and hard reset it
+            STRw_U12(xZR, xEmu, offsetof(x64emu_t, top));
+            STRw_U12(xZR, xEmu, offsetof(x64emu_t, fpu_stack));
+            MOV64x(x1, TAGS_EMPTY);
+            STRx_U12(x1, xEmu, offsetof(x64emu_t, fpu_tags));
             /*emu->top = 0;
             emu->fpu_stack = 0;*/ //TODO: Check if something is needed here?
             break;
@@ -1794,7 +1796,6 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             NOTEST(x1);
             GETIP(ip);  // sync RIP for easier debugging
             STRx_U12(xRIP, xEmu, offsetof(x64emu_t, ip));
-            MOVx_REG(x1, xRAX);
             CALL_(const_cpuid, -1, 0);
             break;
         case 0xA3:
@@ -2657,7 +2658,7 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
             } else switch((nextop>>3)&7) {
             case 1:
                 if(MODREG) {
-                    INST_NAME("Invalid LOCK");
+                    INST_NAME("Invalid C7");
                     UDF(0);
                     *need_epilog = 1;
                     *ok = 0;
@@ -2709,25 +2710,6 @@ uintptr_t dynarec64_0F(dynarec_arm_t* dyn, uintptr_t addr, uintptr_t ip, int nin
                 BARRIER(BARRIER_FLOAT);
                 GETIP(ip);
                 UDF(0);
-                break;
-            case 6:
-                INST_NAME("RDRAND Ed");
-                SETFLAGS(X_ALL, SF_SET);
-                SET_DFNONE();
-                IFX(X_OF|X_SF|X_ZF|X_PF|X_AF) {
-                    MOV32w(x1, (1<<F_OF)|(1<<F_SF)|(1<<F_ZF)|(1<<F_PF)|(1<<F_AF));
-                    BICw(xFlags, xFlags, x1);
-                }
-                if(cpuext.rndr) {
-                    MRS_rndr(x1);
-                    IFX(X_CF) { CSETw(x3, cNE); }
-                } else {
-                    CALL(rex.w?const_random64:const_random32, x1);
-                    IFX(X_CF) { MOV32w(x3, 1); }
-                }
-                IFX(X_CF) { BFIw(xFlags, x3, F_CF, 1); }
-                addr = geted(dyn, addr, ninst, nextop, &wback, x2, &fixedaddress, &unscaled, 0xfff<<(2+rex.w), (1<<(2+rex.w))-1, rex, NULL, 0, 0);
-                STxw(x1, wback, fixedaddress);
                 break;
             default:
                 DEFAULT;

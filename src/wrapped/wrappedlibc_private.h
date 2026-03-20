@@ -23,10 +23,10 @@ GOW(alphasort64, iFpp)
 //GO(__arch_prctl, 
 //GOW(arch_prctl, 
 //DATA(argp_err_exit_status, 4)
-//GOWM(argp_error, vFppV)
-//GOWM(argp_failure, vFpiipV)
+GOWM(argp_error, vFppV)
+GOWM(argp_failure, vFpiipV)
 //GOWM(argp_help, vFpSup)
-//GOWM(argp_parse, iFpipupp)
+GOWM(argp_parse, iFEpipupp)
 //DATAB(argp_program_bug_address, 8)
 //DATAB(argp_program_version, 8)
 //DATAM(argp_program_version_hook, 8)
@@ -319,11 +319,11 @@ GOW(erand48_r, iFppp)
 GOM(err, vFEipV)
 //DATAB(errno, 
 GO(__errno_location, pFv)
-GOWM(error, vFiipV)
-GOWM(error_at_line, vFiipupV)
+GOWM(error, vFEiipV)
+GOWM(error_at_line, vFEiipupV)
 //DATAB(error_message_count, 4)
 //DATAB(error_one_per_line, 4)
-//DATAM(error_print_progname, 8)
+DATAM(error_print_progname, 8)
 GOM(errx, vFEipV)
 #ifdef STATICBUILD
 //GO(ether_aton, pFp)
@@ -416,7 +416,11 @@ GOW(fgetsgent_r, iFSppLp)
 GO(fgetspent, pFS)
 GOW(fgetspent_r, iFSppLp)
 GOW(fgets_unlocked, pFpiS)
-//GO(__fgets_unlocked_chk, 
+#ifdef STATICBUILD
+//GO(__fgets_unlocked_chk,
+#else
+GO(__fgets_unlocked_chk, pFpLiS)
+#endif
 GOW(fgetwc, uFS)
 GOW(fgetwc_unlocked, uFS)
 GO(fgetws, pFpiS)
@@ -837,6 +841,7 @@ GO(inet_nsap_ntoa, pFipp)
 GO(inet_ntoa, pFu)
 GO(inet_ntop, pFippu)
 GOW(inet_pton, iFipp)
+GOM(__inet_pton_chk, iFEippL)
 //GO(__inet_pton_length, 
 GO(initgroups, iFpu)
 GOM(init_module, iFEpLp)
@@ -1040,6 +1045,7 @@ GO2(__isoc23_strtoull, UFppi, strtoull)
 GO2(__isoc23_wcstol, lFppi, wcstol)
 GOM(__isoc99_fscanf, iFEppV)
 GOM(__isoc23_swscanf, iFEppV)
+GO2(__isoc23_vfscanf, iFEppA, my___isoc99_vfscanf)
 //GO(__isoc99_fwscanf, iFppV)
 GOM(__isoc99_scanf, iFEpV)
 GOM(__isoc99_sscanf, iFEppV)
@@ -1210,7 +1216,11 @@ GO(__libc_realloc, pFpL)
 //GOW(__libc_secure_getenv, 
 //GO(__libc_siglongjmp, 
 GOM(__libc_start_main, iFEpippppp)
-//GO(__libc_system, 
+#ifdef STATICBUILD
+// GO(__libc_system, iFp)
+#else
+GO(__libc_system, iFp)
+#endif
 //GO(__libc_thread_freeres, 
 GO(__libc_valloc, pFL)
 //GO(__libc_vfork, 
@@ -1341,6 +1351,21 @@ GOW(monstartup, vFLL)
 #endif
 //DATA(__morecore, 
 GOW(mount, iFpppLp)
+#ifdef STATICBUILD
+GOM(mount_setattr, iFipupL)
+GOM(move_mount, iFipipu)
+GOM(fsopen, iFpu)
+GOM(fsconfig, iFiuppi)
+GOM(fsmount, iFiuu)
+GOM(fspick, iFipu)
+#else
+GO(mount_setattr, iFipupL)
+GO(move_mount, iFipipu)
+GO(fsopen, iFpu)
+GO(fsconfig, iFiuppi)
+GO(fsmount, iFiuu)
+GO(fspick, iFipu)
+#endif
 GO(mprobe, iFp)
 //GO(__mprotect, 
 GOWM(mprotect, iFEpLi)
@@ -1381,7 +1406,7 @@ GO(nice, iFi)
 GO(nl_langinfo, pFi)
 GO(__nl_langinfo_l, pFip)
 GOW(nl_langinfo_l, pFip)
-//DATAB(_nl_msg_cat_cntr, 
+DATAB(_nl_msg_cat_cntr, 4)
 GO(nrand48, lFp)
 GOW(nrand48_r, iFppp)
 //GO(__nss_configure_lookup, 
@@ -1463,6 +1488,7 @@ GO(perror, vFp)
 GOW(personality, iFL)
 GOM(pidfd_open, iFEiu)
 GOM(pidfd_send_signal, iFEiipu)
+GOM(pidfd_getfd, iFEiiu)
 GO(__pipe, iFp)
 GOW(pipe, iFp)
 GO(pipe2, iFpO)
@@ -1498,6 +1524,7 @@ GO(posix_madvise, iFpLi)
 GO(posix_memalign, iFpLL)
 GOW(posix_openpt, iFi)
 GOM(posix_spawn, iFEpppppp)
+GO(posix_spawn_file_actions_addclosefrom_np, iFpi)
 GOW(posix_spawnattr_destroy, iFp)
 GO(posix_spawnattr_getflags, iFpp)
 GO(posix_spawnattr_getpgroup, iFpp)
@@ -1625,7 +1652,7 @@ GOW(readdir64_r, iFppp)
 GOW(readdir_r, iFppp)
 GOWM(readlink, lFEppL)
 GOM(readlinkat, lFEippL)
-//GO(__readlinkat_chk, 
+GOM(__readlinkat_chk, lFEippLL)
 GOM(__readlink_chk, lFEppLL)
 //GO(__read_nocancel, 
 GOW(readv, lFipi)
@@ -1730,7 +1757,7 @@ GOWD(scalbnl, DFDi, scalbn)
 GOWM(scandir, iFEpppp)
 GOWM(scandir64, iFEpppp)
 GOWM(scandirat, iFipppp)
-//GOM(scandirat64, iFipppp)
+GOM(scandirat64, iFEipppp)
 GOM(scanf, iFpV)
 GO(__sched_cpualloc, pFL)
 GO(__sched_cpucount, iFLp)
@@ -1968,6 +1995,7 @@ GO(__strdup, pFp)
 GOW(strdup, pFp)
 GO(strerror, pFi)
 GOW(strerrorname_np, pFi)
+GOW(strerrordesc_np, pFi)
 GO(strerror_l, pFip)
 GO(__strerror_r, pFipL)
 GO(strerror_r, pFipL)
@@ -2214,10 +2242,18 @@ GO(thrd_exit, vFi)
 //GO(thrd_equal, 
 //GO(thrd_sleep, 
 //GO(thrd_yield, 
+//GO(tss_create,
+//GO(tss_get,
+//GO(tss_delete,
+//GO(tss_set,
 #else
 GO(thrd_equal, iFLL)
 GO(thrd_sleep, iFpp)
 GO(thrd_yield, vFv)
+GOM(tss_create, iFEpp)
+GO(tss_get, pFL)
+GO(tss_delete, vFL)
+GO(tss_set, iFLp)
 #endif
 GO(time, lFp)
 GO(timegm, lFp)
@@ -2391,7 +2427,11 @@ GOW(wcsncpy, pFppL)
 GO(__wcsncpy_chk, pFppLL)
 GO(wcsnlen, LFpL)
 GO(wcsnrtombs, LFppLLp)
-//GO(__wcsnrtombs_chk, 
+#ifdef STATICBUILD
+//GO(__wcsnrtombs_chk,
+#else
+GO(__wcsnrtombs_chk, LFppLLpL)
+#endif
 GO(wcspbrk, pFpp)
 GO(wcsrchr, pFpi)
 GO(wcsrtombs, LFppLp)
@@ -2701,7 +2741,12 @@ GO(ns_initparse, iFpip)
 #ifdef STATICBUILD
 GO(dummy_pFLp, pFLp)
 GO(dummy_pFpLLp, pFpLLp)
+// not needed in static build
+//GO(dummy_pFpLLi, pFpLLi)
+//GO(dummy_iFiiULippp, iFiiULippp)
 #else
+GO(dummy_pFpLLi, pFpLLi)    //needed for vulkanoverlay
+GO(dummy_iFiiULippp, iFiiULippp)    //needed for vulkanoverlay
 // not needed in no-static build
 //GO(dummy_pFLp, pFLp)
 //GO(dummy_pFpLLp, pFpLLp)

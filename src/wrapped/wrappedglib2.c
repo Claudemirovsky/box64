@@ -1034,6 +1034,15 @@ EXPORT void my_g_main_context_set_poll_func(x64emu_t* emu, void* context, void* 
     my->g_main_context_set_poll_func(context, findPollFct(func));
 }
 
+EXPORT int my_g_markup_collect_attributes(x64emu_t* emu, void* element_name,
+                                          void* attribute_names, void* attribute_values,
+                                          void* error, int first_type, void* first_attr,
+                                          uintptr_t* b)
+{
+    CREATE_VALIST_FROM_VAARG(b, emu->scratch, 6);
+    return my->g_markup_collect_attributes(element_name, attribute_names, attribute_values, error, first_type, first_attr, VARARGS);
+}
+
 EXPORT uint32_t my_g_idle_add_full(x64emu_t* emu, int priority, void* f, void* data, void* notify)
 {
     return my->g_idle_add_full(priority, findTimeOutFct(f), data, findGDestroyNotifyFct(notify));
@@ -1129,6 +1138,10 @@ EXPORT void my_g_ptr_array_sort_with_data(x64emu_t* emu, void* array, void* comp
 {
     my->g_ptr_array_sort_with_data(array, findGCompareDataFuncFct(comp), data);
 }
+EXPORT void my_g_ptr_array_sort_values(x64emu_t* emu, void* array, void* comp)
+{
+    my->g_ptr_array_sort_values(array, findGCompareFuncFct(comp));
+}
 
 EXPORT void my_g_qsort_with_data(x64emu_t* emu, void* pbase, int total, unsigned long size, void* comp, void* data)
 {
@@ -1138,6 +1151,11 @@ EXPORT void my_g_qsort_with_data(x64emu_t* emu, void* pbase, int total, unsigned
 EXPORT void my_g_ptr_array_foreach(x64emu_t* emu, void* array, void* func, void* data)
 {
     my->g_ptr_array_foreach(array, findGFuncFct(func), data);
+}
+
+EXPORT int my_g_ptr_array_find_with_equal_func(x64emu_t* emu, void* haystack, void* needle, void* equal_func, void* index_)
+{
+    return my->g_ptr_array_find_with_equal_func(haystack, needle, findEqualFct(equal_func), index_);
 }
 
 EXPORT void* my_g_thread_create(x64emu_t* emu, void* func, void* data, int joinable, void* error)
@@ -1374,6 +1392,13 @@ EXPORT void* my_g_error_new_valist(x64emu_t* emu, uint32_t domain, int code, voi
     return my->g_error_new_valist(domain, code, fmt, VARARGS);
 }
 
+EXPORT void my_g_propagate_prefixed_error(x64emu_t* emu, void* dest, void* src, void* fmt, uintptr_t* b)
+{
+    myStackAlign(emu, fmt, b, emu->scratch, R_EAX, 3);
+    PREPARE_VALIST;
+    my->g_propagate_prefixed_error(dest, src, fmt, VARARGS);
+}
+
 EXPORT int my_g_fprintf(x64emu_t* emu, void* f, void* fmt, uintptr_t* b)
 {
     myStackAlign(emu, fmt, b, emu->scratch, R_EAX, 3);
@@ -1395,6 +1420,13 @@ EXPORT void my_g_log(x64emu_t* emu, void* domain, int level, void* fmt, uintptr_
     myStackAlign(emu, fmt, b, emu->scratch, R_EAX, 3);
     PREPARE_VALIST;
     my->g_logv(domain, level, fmt, VARARGS);
+}
+
+EXPORT void my_g_log_structured_standard(x64emu_t* emu, void* log_domain, uint32_t log_level, void* file, void* line, void* func, void* fmt, uintptr_t* b)
+{
+    myStackAlign(emu, fmt, b, emu->scratch, R_EAX, 6);
+    PREPARE_VALIST;
+    my->g_log_structured_standard(log_domain, log_level, file, line, func, fmt, VARARGS);
 }
 
 EXPORT int my_g_printf(x64emu_t* emu, void* fmt, uintptr_t* b)
@@ -1586,6 +1618,13 @@ EXPORT void* my_g_list_insert_sorted_with_data(x64emu_t* emu, void* list, void* 
 EXPORT void my_g_option_group_set_parse_hooks(x64emu_t* emu, void* group, void* preparse, void* postparse)
 {
     my->g_option_group_set_parse_hooks(group, findGOptionParseFct(preparse), findGOptionParseFct(postparse));
+}
+
+EXPORT void my_g_prefix_error(x64emu_t* emu, void* err, void* fmt, uintptr_t* b)
+{
+    myStackAlign(emu, fmt, b, emu->scratch, R_EAX, 2);
+    PREPARE_VALIST;
+    my->g_prefix_error(err, fmt, VARARGS);
 }
 
 EXPORT void* my_g_thread_new(x64emu_t* emu, void* name, void* f, void* data)

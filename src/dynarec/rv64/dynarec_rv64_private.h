@@ -97,6 +97,7 @@ typedef struct flagcache_s {
 } flagcache_t;
 
 typedef struct callret_s callret_t;
+typedef struct sep_s sep_t;
 
 typedef struct instruction_rv64_s {
     instruction_x64_t   x64;
@@ -169,7 +170,9 @@ typedef struct dynarec_rv64_s {
     instsize_t*         instsize;
     size_t              insts_size; // size of the instruction size array (calculated)
     int                 callret_size;   // size of the array
-    callret_t*          callrets;   // arrey of callret return, with NOP / UDF depending if the block is clean or dirty
+    int                 sep_size;   // size of the array
+    callret_t*          callrets;   // array of callret return, with NOP / UDF depending if the block is clean or dirty
+    sep_t*              sep;        // array of secondary entry point
     uint8_t             smwrite;    // for strongmem model emulation
     uintptr_t           forward;    // address of the last end of code while testing forward
     uintptr_t           forward_to; // address of the next jump to (to check if everything is ok)
@@ -183,6 +186,7 @@ typedef struct dynarec_rv64_s {
     uint8_t             inst_sew;       // sew inside current instruction, for vsetvli elimination
     uint8_t             inst_vl;        // vl inside current instruction, for vsetvli elimination
     uint8_t             inst_vlmul;     // vlmul inside current instruction
+    uint8_t             is_file_mapped; // if the memory is a mapped file (probably binary, not a memory)
     void*               gdbjit_block;
     uint32_t            need_x87check; // x87 low precision check
     uint32_t            need_dump;     // need to dump the block

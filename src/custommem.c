@@ -1346,7 +1346,7 @@ void* box32_dynarec_mmap(size_t size, int fd, off_t offset)
                 if(ret!=MAP_FAILED) {
                     //rb_set(mapallmem, cur, cur+size, MEM_BOX);    // mark as allocated by/for box
                 } else
-                    printf_log(LOG_INFO, "BOX32: Error allocating Dynarec memory: %s\n", strerror(errno));
+                    printf_log(LOG_INFO, "Error allocating Dynarec memory: %s\n", strerror(errno));
                 cur = cur+size;
                 return ret;
             }
@@ -1355,7 +1355,7 @@ void* box32_dynarec_mmap(size_t size, int fd, off_t offset)
     }
 #endif
     uint32_t map_flags = ((fd==-1)?MAP_ANONYMOUS:0) | MAP_PRIVATE;
-    //printf_log(LOG_INFO, "BOX32: Error allocating Dynarec memory: %s\n", "fallback to internal mmap");
+    // printf_log(LOG_INFO, "Error allocating Dynarec memory: %s\n", "fallback to internal mmap");
     void* ret = InternalMmap(box64_isAddressSpace32?NULL:(void*)0x100000000ULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, map_flags, fd, offset);
     //printf_log(LOG_INFO, "fallback on box32_dynarec_mmap: %p\n", ret);
     return ret;
@@ -1480,6 +1480,7 @@ int MmaplistAddBlock(mmaplist_t* list, int fd, off_t offset, void* orig, size_t 
             GO(instsize);
             GO(arch);
             GO(callrets);
+            GO(sep);
             GO(jmpnext);
             GO(table64);
             GO(relocs);
@@ -1506,6 +1507,14 @@ int MmaplistAddBlock(mmaplist_t* list, int fd, off_t offset, void* orig, size_t 
                 // cannot add blocks?
                 printf_log(LOG_INFO, "Warning, cannot add DynaCache Block %d to JmpTable\n", i);
             } else {
+                for(int i=0; i<bl->sep_size; ++i) {
+                    uint32_t x64_offs = bl->sep[i].x64_offs;
+                    uint32_t nat_offs = bl->sep[i].nat_offs;
+                    if(addJumpTableIfDefault64(bl->x64_addr+x64_offs, (bl->dirty || bl->always_test)?bl->jmpnext:(bl->block+nat_offs)))
+                        bl->sep[i].active = 1;
+                    else
+                        bl->sep[i].active = 0;
+                }
                 if(bl->x64_size) {
                     dynarec_log(LOG_DEBUG, "Added DynCache bl %p for %p - %p\n", bl, bl->x64_addr, bl->x64_addr+bl->x64_size);
                     if(bl->x64_size>my_context->max_db_size) {
@@ -1556,6 +1565,7 @@ void DelMmaplist(mmaplist_t* list)
             } else
                 rb_unset(mapallmem, (uintptr_t)addr, (uintptr_t)addr+size);
         }
+    box_free(list->chunks);
     box_free(list);
 }
 
@@ -1975,9 +1985,9 @@ int addJumpTableIfDefault64(void* addr, void* jmp)
     idx0 = (((uintptr_t)addr)                )&JMPTABLE_MASK0;
 
     #ifdef JMPTABL_SHIFT4
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), jmp, native_next)==jmp)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), jmp, native_next)==native_next)?1:0;
     #else
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3), jmp, native_next)==jmp)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3), jmp, native_next)==native_next)?1:0;
     #endif
 }
 void setJumpTableDefault64(void* addr)
@@ -2023,9 +2033,9 @@ int setJumpTableDefaultIfRef64(void* addr, void* jmp)
         return 0;
     idx0 = (((uintptr_t)addr)    )&JMPTABLE_MASK0;
     #ifdef JMPTABL_SHIFT4
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), native_next, jmp)==native_next)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), native_next, jmp)==jmp)?1:0;
     #else
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3), native_next, jmp)==native_next)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3), native_next, jmp)==jmp)?1:0;
     #endif
 }
 void setJumpTableDefaultRef64(void* addr, void* jmp)
@@ -2048,7 +2058,7 @@ void setJumpTableDefaultRef64(void* addr, void* jmp)
     if(box64_jmptbl3[idx3][idx2][idx1] == box64_jmptbldefault0)
         return;
     idx0 = (((uintptr_t)addr)    )&JMPTABLE_MASK0;
-    native_lock_storeifref(&box64_jmptbl3[idx3][idx2][idx1][idx0], native_next, jmp);
+    native_lock_storeifref2(&box64_jmptbl3[idx3][idx2][idx1][idx0], native_next, jmp);
 }
 int setJumpTableIfRef64(void* addr, void* jmp, void* ref)
 {
@@ -2061,9 +2071,9 @@ int setJumpTableIfRef64(void* addr, void* jmp, void* ref)
     idx1 = (((uintptr_t)addr)>>JMPTABL_START1)&JMPTABLE_MASK1;
     idx0 = (((uintptr_t)addr)    )&JMPTABLE_MASK0;
     #ifdef JMPTABL_SHIFT4
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), jmp, ref)==jmp)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3, idx4), jmp, ref)==ref)?1:0;
     #else
-    return (native_lock_storeifref(create_jmptbl(0, idx0, idx1, idx2, idx3), jmp, ref)==jmp)?1:0;
+    return (native_lock_storeifref2(create_jmptbl(0, idx0, idx1, idx2, idx3), jmp, ref)==ref)?1:0;
     #endif
 }
 int isJumpTableDefault64(void* addr)
@@ -2129,7 +2139,7 @@ uintptr_t getJumpTableAddress64(uintptr_t addr)
     #endif
 }
 
-dynablock_t* getDB(uintptr_t addr)
+dynablock_t* getDBBlock(uintptr_t addr, void** jblock)
 {
     uintptr_t idx3, idx2, idx1, idx0;
     #ifdef JMPTABL_SHIFT4
@@ -2144,27 +2154,23 @@ dynablock_t* getDB(uintptr_t addr)
     #else
     uintptr_t ret = (uintptr_t)box64_jmptbl3[idx3][idx2][idx1][idx0];
     #endif
+    if(jblock) *jblock = (void*)ret;
 
     return *(dynablock_t**)(ret - sizeof(void*));
 }
 
+dynablock_t* getDB(uintptr_t addr)
+{
+    return getDBBlock(addr, NULL);
+}
+
 int getNeedTest(uintptr_t addr)
 {
-    uintptr_t idx3, idx2, idx1, idx0;
-    #ifdef JMPTABL_SHIFT4
-    uintptr_t idx4 = (((uintptr_t)addr)>>JMPTABL_START4)&JMPTABLE_MASK4;
-    #endif
-    idx3 = ((addr)>>JMPTABL_START3)&JMPTABLE_MASK3;
-    idx2 = ((addr)>>JMPTABL_START2)&JMPTABLE_MASK2;
-    idx1 = ((addr)>>JMPTABL_START1)&JMPTABLE_MASK1;
-    idx0 = ((addr)                )&JMPTABLE_MASK0;
-    #ifdef JMPTABL_SHIFT4
-    uintptr_t ret = (uintptr_t)box64_jmptbl4[idx4][idx3][idx2][idx1][idx0];
-    #else
-    uintptr_t ret = (uintptr_t)box64_jmptbl3[idx3][idx2][idx1][idx0];
-    #endif
-    dynablock_t* db = *(dynablock_t**)(ret - sizeof(void*));
-    return db?((ret!=(uintptr_t)db->block)?1:0):0;
+    void* jblock = NULL;
+    dynablock_t* db = getDBBlock(addr, &jblock);
+    if(!db) return 0;
+    if(jblock==db->jmpnext) return 1;
+    return 0;
 }
 
 uintptr_t getJumpAddress64(uintptr_t addr)
@@ -2182,6 +2188,31 @@ uintptr_t getJumpAddress64(uintptr_t addr)
     #else
     return (uintptr_t)box64_jmptbl3[idx3][idx2][idx1][idx0];
     #endif
+}
+
+// Helper: check if any sub-range in a host page has PROT_WRITE that is NOT part of the
+// dynarec-protected range [prot_start, prot_end). This detects mixed code+data host pages
+// on systems with large pages (e.g. 64KB) where mprotect to remove PROT_WRITE would also
+// strip writability from data regions, causing EFAULT on kernel writes (e.g. read() syscall).
+// Must be called with LOCK_PROT() held.
+static int hostPageHasExternalWrite_locked(uintptr_t host_page, uintptr_t prot_start, uintptr_t prot_end)
+{
+    uintptr_t scan = host_page;
+    uintptr_t host_end = host_page + box64_pagesize;
+    while(scan < host_end) {
+        uint32_t p = 0;
+        uintptr_t bend = 0;
+        rb_get_end(memprot, scan, &p, &bend);
+        if(bend > host_end)
+            bend = host_end;
+        if(p && (p & PROT_WRITE) && !(p & PROT_DYN)) {
+            if(scan < prot_start || bend > prot_end) {
+                return 1;
+            }
+        }
+        scan = bend;
+    }
+    return 0;
 }
 
 // Remove the Write flag from an adress range, so DB can be executed safely
@@ -2206,8 +2237,19 @@ void protectDBJumpTable(uintptr_t addr, size_t size, void* jump, void* ref)
         if(!(dyn&PROT_NEVERPROT)) {
             prot&=~PROT_CUSTOM;
             if(prot&PROT_WRITE) {
-                if(!dyn) 
-                    mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                if(!dyn) {
+                    if(box64_pagesize > 4096) {
+                        uintptr_t host_page = cur & ~(box64_pagesize-1);
+                        if(hostPageHasExternalWrite_locked(host_page, addr, addr+size)) {
+                            dynarec_log(LOG_INFO, "protectDBJumpTable: mixed code+data host page %p, using always_test instead of mprotect\n", (void*)host_page);
+                            prot |= PROT_NEVERCLEAN;
+                        } else {
+                            mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                        }
+                    } else {
+                        mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                    }
+                }
                 prot |= PROT_DYNAREC;
             } else 
                 prot |= PROT_DYNAREC_R;
@@ -2243,8 +2285,24 @@ void protectDB(uintptr_t addr, uintptr_t size)
         if(!(dyn&PROT_NEVERPROT)) {
             prot&=~PROT_CUSTOM;
             if(prot&PROT_WRITE) {
-                if(!dyn) 
-                    mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                if(!dyn) {
+                    // On large-page systems, check if removing PROT_WRITE from this host page
+                    // would also affect writable data regions sharing the same host page.
+                    // If so, use PROT_NEVERCLEAN (always_test mode) instead of mprotect,
+                    // because kernel syscalls (e.g. read()) cannot be caught via SEGV and
+                    // would return EFAULT if the buffer is on a non-writable page.
+                    if(box64_pagesize > 4096) {
+                        uintptr_t host_page = cur & ~(box64_pagesize-1);
+                        if(hostPageHasExternalWrite_locked(host_page, addr, addr+size)) {
+                            dynarec_log(LOG_INFO, "protectDB: mixed code+data host page %p, using always_test instead of mprotect\n", (void*)host_page);
+                            prot |= PROT_NEVERCLEAN;
+                        } else {
+                            mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                        }
+                    } else {
+                        mprotect((void*)cur, bend-cur, prot&~PROT_WRITE);
+                    }
+                }
                 prot |= PROT_DYNAREC;
             } else 
                 prot |= PROT_DYNAREC_R;
@@ -3123,9 +3181,9 @@ void fini_custommem_helper(box64context_t *ctx)
             for (int i=0; i<head->size; ++i) {
                 InternalMunmap(head->chunks[i]->block-sizeof(blocklist_t), head->chunks[i]->size+sizeof(blocklist_t));
             }
-            free(head);
+            box_free(head->chunks);
+            box_free(head);
         }
-        box_free(mmaplist);
         #ifdef JMPTABL_SHIFT4
         uintptr_t**** box64_jmptbl3;
         for(int i4 = 0; i4 < (1<< JMPTABL_SHIFT4); ++i4)

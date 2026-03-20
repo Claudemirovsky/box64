@@ -139,6 +139,14 @@ static kh_customclass_t *my_customclass = NULL;
 // ---- Defining the multiple functions now -----
 #include "super80.h"
 
+#define WRAPPED_RET(A, NAME, RET, FRET, DEF, FMT, ...)  \
+static uintptr_t my_##NAME##_fct_##A = 0;   \
+static RET my_##NAME##_##A DEF              \
+{                                           \
+    printf_log(LOG_DEBUG, "Calling " #NAME "_" #A " wrapper\n");                \
+    return FRET((RET)RunFunctionFmt(my_##NAME##_fct_##A, FMT, __VA_ARGS__));    \
+}
+
 #define WRAPPED(A, NAME, RET, DEF, FMT, ...)  \
 static uintptr_t my_##NAME##_fct_##A = 0;   \
 static RET my_##NAME##_##A DEF              \
@@ -338,6 +346,51 @@ WRAPPED(36, NAME##_##A, RET, DEF, FMT, __VA_ARGS__) \
 WRAPPED(37, NAME##_##A, RET, DEF, FMT, __VA_ARGS__) \
 WRAPPED(38, NAME##_##A, RET, DEF, FMT, __VA_ARGS__) \
 WRAPPED(39, NAME##_##A, RET, DEF, FMT, __VA_ARGS__) \
+FIND(A, NAME)                                       \
+REVERSE(A, NAME)                                    \
+AUTOBRIDGE(A, NAME)
+
+#define WRAPPER_RET(A, NAME, RET, FRET, DEF, FMT, ...)        \
+WRAPPED_RET( 0, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 1, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 2, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 3, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 4, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 5, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 6, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 7, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 8, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET( 9, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(10, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(11, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(12, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(13, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(14, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(15, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(16, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(17, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(18, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(19, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(20, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(21, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(22, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(23, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(24, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(25, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(26, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(27, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(28, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(29, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(30, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(31, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(32, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(33, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(34, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(35, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(36, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(37, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(38, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
+WRAPPED_RET(39, NAME##_##A, RET, FRET, DEF, FMT, __VA_ARGS__) \
 FIND(A, NAME)                                       \
 REVERSE(A, NAME)                                    \
 AUTOBRIDGE(A, NAME)
@@ -2062,6 +2115,59 @@ static void unwrapGDBusObjectManagerClientInstance(my_GDBusObjectManagerClient_t
 }
 // autobridge
 static void bridgeGDBusObjectManagerClientInstance(my_GDBusObjectManagerClient_t* class)
+{
+    bridgeGObjectInstance(&class->parent);
+}
+
+// ----- GDBusInterfaceSkeletonClass ------
+// wrapper x86 -> natives of callbacks
+WRAPPER(GDBusInterfaceSkeleton,get_info, void*, (void* interface_), "p", interface_);
+WRAPPER_RET(GDBusInterfaceSkeleton,get_vtable, my_GDBusInterfaceVTable_t*, findFreeGDBusInterfaceVTable,(void* interface_), "p", interface_);
+WRAPPER(GDBusInterfaceSkeleton,get_properties, void*, (void* interface_), "p", interface_);
+WRAPPER(GDBusInterfaceSkeleton,flush, void, (void* interface_), "p", interface_);
+WRAPPER(GDBusInterfaceSkeleton,g_authorize_method, int, (void* interface_, void* invocation), "pp", interface_, invocation);
+
+#define SUPERGO()                   \
+    GO(get_info, pFp);              \
+    GO(get_vtable, pFp);            \
+    GO(get_properties, pFp);        \
+    GO(flush, vFp);                 \
+    GO(g_authorize_method, iFpp);   \
+
+
+// wrap (so bridge all calls, just in case)
+static void wrapGDBusInterfaceSkeletonClass(my_GDBusInterfaceSkeletonClass_t* class)
+{
+    wrapGObjectClass(&class->parent);
+    #define GO(A, W) class->A = reverse_##A##_GDBusInterfaceSkeleton (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+// unwrap (and use callback if not a native call anymore)
+static void unwrapGDBusInterfaceSkeletonClass(my_GDBusInterfaceSkeletonClass_t* class)
+{
+    unwrapGObjectClass(&class->parent);
+    #define GO(A, W)   class->A = find_##A##_GDBusInterfaceSkeleton (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+// autobridge
+static void bridgeGDBusInterfaceSkeletonClass(my_GDBusInterfaceSkeletonClass_t* class)
+{
+    bridgeGObjectClass(&class->parent);
+    #define GO(A, W) autobridge_##A##_GDBusInterfaceSkeleton (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+
+#undef SUPERGO
+
+static void unwrapGDBusInterfaceSkeletonInstance(my_GDBusInterfaceSkeleton_t* class)
+{
+    unwrapGObjectInstance(&class->parent);
+}
+// autobridge
+static void bridgeGDBusInterfaceSkeletonInstance(my_GDBusInterfaceSkeleton_t* class)
 {
     bridgeGObjectInstance(&class->parent);
 }
@@ -4642,6 +4748,80 @@ static void bridgeGstAudioDecoderInstance(my_GstAudioDecoder_t* class)
 {
     bridgeGstElementInstance(&class->parent);
 }
+// ----- GstAudioEncoderClass ------
+// wrapper x86 -> natives of callbacks
+WRAPPER(GstAudioEncoder, start, int, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, stop, int, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, set_format, int, (void* enc, void* info), "pp", enc, info);
+WRAPPER(GstAudioEncoder, handle_frame, int, (void* enc, void* buffer), "pp", enc, buffer);
+WRAPPER(GstAudioEncoder, flush, void, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, pre_push, int, (void* enc, void* *buffer), "pp", enc, buffer);
+WRAPPER(GstAudioEncoder, sink_event, int, (void* enc, void* event), "pp", enc, event);
+WRAPPER(GstAudioEncoder, src_event, int, (void* enc, void* event), "pp", enc, event);
+WRAPPER(GstAudioEncoder, getcaps, void, (void* enc, void* filter), "pp", enc, filter);
+WRAPPER(GstAudioEncoder, open, int, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, close, int, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, negotiate, int, (void* enc), "p", enc);
+WRAPPER(GstAudioEncoder, decide_allocation, int, (void* enc, void* query), "pp", enc, query);
+WRAPPER(GstAudioEncoder, propose_allocation, int, (void* enc, void*  query), "pp", enc, query);
+WRAPPER(GstAudioEncoder, transform_meta, int, (void* enc, void* outbuf, void* meta, void* inbuf), "pppp", enc, outbuf, meta, inbuf);
+WRAPPER(GstAudioEncoder, sink_query, int, (void* enc, void* query), "pp", enc, query);
+WRAPPER(GstAudioEncoder, src_query, int, (void* enc, void* query), "pp", enc, query);
+
+#define SUPERGO()                       \
+    GO(start, iFp);                     \
+    GO(stop, iFp);                      \
+    GO(set_format, iFpp);               \
+    GO(handle_frame, iFpp);             \
+    GO(flush, vFpi);                    \
+    GO(pre_push, iFpp);                 \
+    GO(sink_event, iFpp);               \
+    GO(src_event, iFpp);                \
+    GO(getcaps, vFpp);                  \
+    GO(open, iFp);                      \
+    GO(close, iFp);                     \
+    GO(negotiate, iFp);                 \
+    GO(decide_allocation, iFpp);        \
+    GO(propose_allocation, iFpp);       \
+    GO(transform_meta, iFpppp);         \
+    GO(sink_query, iFpp);               \
+    GO(src_query, iFpp);                \
+
+// wrap (so bridge all calls, just in case)
+static void wrapGstAudioEncoderClass(my_GstAudioEncoderClass_t* class)
+{
+    wrapGstElementClass(&class->parent_class);
+    #define GO(A, W) class->A = reverse_##A##_GstAudioEncoder (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+// unwrap (and use callback if not a native call anymore)
+static void unwrapGstAudioEncoderClass(my_GstAudioEncoderClass_t* class)
+{
+    unwrapGstElementClass(&class->parent_class);
+    #define GO(A, W)   class->A = find_##A##_GstAudioEncoder (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+// autobridge
+static void bridgeGstAudioEncoderClass(my_GstAudioEncoderClass_t* class)
+{
+    bridgeGstElementClass(&class->parent_class);
+    #define GO(A, W) autobridge_##A##_GstAudioEncoder (W, class->A)
+    SUPERGO()
+    #undef GO
+}
+#undef SUPERGO
+
+static void unwrapGstAudioEncoderInstance(my_GstAudioEncoder_t* class)
+{
+    unwrapGstElementInstance(&class->parent);
+}
+// autobridge
+static void bridgeGstAudioEncoderInstance(my_GstAudioEncoder_t* class)
+{
+    bridgeGstElementInstance(&class->parent);
+}
 // ----- GstVideoFilterClass ------
 // wrapper x86 -> natives of callbacks
 WRAPPER(GstVideoFilter, set_info, int, (void* filter, void* incaps, void* in_info, void* outcaps, void* out_info), "ppppp", filter, incaps, in_info, outcaps, out_info);
@@ -5705,7 +5885,7 @@ static int my_class_init_##A(void* a, void* b)                              \
 }
 SUPER()
 #undef GO
-void* find_class_init_Fct(void* fct, size_t parent)
+static void* find_class_init_Fct(void* fct, size_t parent)
 {
     if(!fct) return fct;
     if(GetNativeFnc((uintptr_t)fct))  return GetNativeFnc((uintptr_t)fct);

@@ -224,12 +224,12 @@ GO(nettle_eax_aes128_digest, vFpLp)
 GO(nettle_eax_aes128_set_key, vFpp)
 //GO(nettle_eax_aes128_set_nonce, 
 GO(nettle_eax_aes128_update, vFpLp)
-//GO(nettle_eax_decrypt, 
-//GO(nettle_eax_digest, 
-//GO(nettle_eax_encrypt, 
-//GO(nettle_eax_set_key, 
-//GO(nettle_eax_set_nonce, 
-//GO(nettle_eax_update, 
+GOM(nettle_eax_decrypt, vFEppppLpp)
+GOM(nettle_eax_digest, vFEppppLp)
+GOM(nettle_eax_encrypt, vFEppppLpp)
+GOM(nettle_eax_set_key, vFEppp)
+GOM(nettle_eax_set_nonce, vFEppppLp)
+GOM(nettle_eax_update, vFEppppLp)
 //DATA(nettle_gcm_aes128, 
 GO(nettle_gcm_aes128_decrypt, vFpLpp)
 GO(nettle_gcm_aes128_digest, vFpLp)
@@ -385,14 +385,14 @@ GO(nettle_ocb_aes128_set_decrypt_key, vFppp)
 GO(nettle_ocb_aes128_set_encrypt_key, vFpp)
 GO(nettle_ocb_aes128_set_nonce, vFppLLp)
 GO(nettle_ocb_aes128_update, vFppLp)
-//GO(nettle_ocb_decrypt, 
+GOM(nettle_ocb_decrypt, vFEppppppLpp)
 //GO(nettle_ocb_decrypt_message, 
-//GO(nettle_ocb_digest, 
-//GO(nettle_ocb_encrypt, 
+GOM(nettle_ocb_digest, vFEppppLp)
+GOM(nettle_ocb_encrypt, vFEppppLpp)
 //GO(nettle_ocb_encrypt_message, 
-//GO(nettle_ocb_set_key, 
-//GO(nettle_ocb_set_nonce, 
-//GO(nettle_ocb_update, 
+GOM(nettle_ocb_set_key, vFEppp)
+GOM(nettle_ocb_set_nonce, vFEpppLLp)
+GOM(nettle_ocb_update, vFEppppLp)
 GOM(nettle_pbkdf2, vFEpppLuLpLp)
 GO(nettle_pbkdf2_hmac_gosthash94cp, vFLpuLpLp)
 //GO(nettle_pbkdf2_hmac_sha1, 
@@ -439,7 +439,7 @@ GO(nettle_sha1_update, vFpLp)
 //DATA(nettle_sha224, 
 GO(nettle_sha224_digest, vFpLp)
 GO(nettle_sha224_init, vFp)
-//DATA(nettle_sha256, 
+DATA(nettle_sha256, 48)
 //GO(nettle_sha256_compress, 
 //GO(_nettle_sha256_compress_n, 
 //GO(_nettle_sha256_compress_n_c, 
@@ -468,7 +468,7 @@ GO(nettle_sha3_384_update, vFpLp)
 GO(nettle_sha3_512_digest, vFpLp)
 GO(nettle_sha3_512_init, vFp)
 GO(nettle_sha3_512_update, vFpLp)
-//DATA(nettle_sha384, 
+DATA(nettle_sha384, 48)
 GO(nettle_sha384_digest, vFpip)
 GO(nettle_sha384_init, vFp)
 //GO(_nettle_sha3_pad, 
@@ -476,7 +476,7 @@ GO(nettle_sha3_permute, vFp)
 //GO(_nettle_sha3_shake, 
 //GO(_nettle_sha3_shake_output, 
 //GO(_nettle_sha3_update, 
-//DATA(nettle_sha512, 
+DATA(nettle_sha512, 48)
 //DATA(nettle_sha512_224, 
 //GO(nettle_sha512_224_digest, 
 //GO(nettle_sha512_224_init, 
@@ -527,7 +527,7 @@ GO(nettle_streebog512_update, vFpLp)
 //DATA(nettle_twofish256, 
 GO(nettle_twofish256_set_key, vFpp)
 GO(nettle_twofish_decrypt, vFpLpp)
-//GO(nettle_twofish_encrypt, 
+GO(nettle_twofish_encrypt, vFpLpp)
 GO(nettle_twofish_set_key, vFpLp)
 GO(nettle_umac128_digest, vFpLp)
 GO(nettle_umac128_set_key, vFpp)
@@ -555,8 +555,8 @@ GO(nettle_umac96_update, vFpLp)
 //GO(_nettle_umac_poly128, 
 //GO(_nettle_umac_poly64, 
 //GO(_nettle_umac_set_key, 
-//GO(nettle_version_major, 
-//GO(nettle_version_minor, 
+GO(nettle_version_major, iFv)
+GO(nettle_version_minor, iFv)
 //GO(_nettle_write_be32, 
 //GO(_nettle_write_le32, 
 //GO(_nettle_write_le64, 

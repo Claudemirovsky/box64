@@ -49,6 +49,8 @@ typedef union sse_cache_s {
     };
 } sse_cache_t;
 typedef struct callret_s callret_t;
+typedef struct sep_s sep_t;
+
 typedef struct neoncache_s {
     // Neon cache
     neon_cache_t        neoncache[32];
@@ -178,7 +180,9 @@ typedef struct dynarec_arm_s {
     instsize_t*         instsize;
     size_t              insts_size; // size of the instruction size array (calculated)
     int                 callret_size;   // size of the array
-    callret_t*          callrets;   // arrey of callret return, with NOP / UDF depending if the block is clean or dirty
+    int                 sep_size;   // size of the array
+    callret_t*          callrets;   // array of callret return, with NOP / UDF depending if the block is clean or dirty
+    sep_t*              sep;        // array of secondary entry point
     uintptr_t           forward;    // address of the last end of code while testing forward
     uintptr_t           forward_to; // address of the next jump to (to check if everything is ok)
     int32_t             forward_size;   // size at the forward point
@@ -194,6 +198,7 @@ typedef struct dynarec_arm_s {
     uint8_t             use_xmm:1;
     uint8_t             use_ymm:1;
     uint8_t             have_purge:1;   // set to 1 if block can be purged
+    uint8_t             is_file_mapped:1;   // if the memory is a mapped file (probably binary, not a memory)
     void*               gdbjit_block;
     uint32_t            need_x87check;  // needs x87 precision control check if non-null, or 0 if not
     uint32_t            need_dump;     // need to dump the block

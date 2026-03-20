@@ -162,6 +162,7 @@ typedef struct box64context_s {
     pthread_mutex_t     mutex_tls;
     pthread_mutex_t     mutex_thread;
     pthread_mutex_t     mutex_bridge;
+    pthread_mutex_t     mutex_dyndump;
     #else
     #ifdef USE_CUSTOM_MUTEX
     uint32_t            mutex_dyndump;
@@ -180,7 +181,7 @@ typedef struct box64context_s {
     rbtree_t*             db_sizes;
     int                 trace_dynarec;
     pthread_mutex_t     mutex_lock;     // this is for the Test interpreter
-    #if defined(__riscv) || defined(__loongarch64)
+    #if defined(__riscv) || defined(__loongarch64) || defined(__powerpc64__)
     uint32_t            mutex_16b;
     #endif
     #endif
@@ -211,6 +212,8 @@ typedef struct box64context_s {
     cleanup_t           *cleanups;          // atexit functions
     int                 clean_sz;
     int                 clean_cap;
+
+    void*               video_mem;
 
     zydis_dec_t         *dec;           // trace
     zydis_dec_t         *dec32;         // trace
